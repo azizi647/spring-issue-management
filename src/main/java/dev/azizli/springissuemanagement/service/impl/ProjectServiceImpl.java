@@ -1,12 +1,16 @@
 package dev.azizli.springissuemanagement.service.impl;
 
+import dev.azizli.springissuemanagement.dto.ProjectDto;
 import dev.azizli.springissuemanagement.entity.Project;
 import dev.azizli.springissuemanagement.repository.ProjectRepository;
 import dev.azizli.springissuemanagement.service.ProjectService;
+import dev.azizli.springissuemanagement.util.TPage;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,43 +21,61 @@ import java.util.List;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final ModelMapper modelMapper;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, ModelMapper modelMapper) {
         this.projectRepository = projectRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
-    public Project save(Project project) {
+    public ProjectDto save(ProjectDto project) {
 
-        if(project.getProjectCode()==null)
-            throw new IllegalArgumentException("Project code cannot be null");
+        Project projectCheck = projectRepository.getAllByProjectCode(project.getProjectCode());
+        if (projectCheck !=null)
+            throw new IllegalArgumentException("Project Code Already Exist");
 
-        return projectRepository.save(project);
+        Project projectEntity = modelMapper.map(project, Project.class);
+
+        projectEntity = projectRepository.save(projectEntity);
+        project.setId(projectEntity.getId());
+        return modelMapper.map(projectEntity, ProjectDto.class);
     }
 
     @Override
-    public Project getOne(Long id) {
-        return projectRepository.getOne(id);
+    public ProjectDto getById(Long id) {
+        Project project = projectRepository.getOne(id);
+        return modelMapper.map(project, ProjectDto.class);
     }
 
     @Override
-    public Page<Project> findAll(Pageable pageable) {
-        return projectRepository.findAll(pageable);
+    public List<ProjectDto> getAll() {
+        List<Project> projects = projectRepository.findAll();
+        return Arrays.asList(modelMapper.map(projects, ProjectDto[].class));
     }
 
     @Override
-    public List<Project> getByProjectCode(String projectCode) {
+    public TPage<ProjectDto> findAll(Pageable pageable) {
+        Page<Project> projects = projectRepository.findAll(pageable);
+        TPage<ProjectDto> projectDtoTPage = new TPage<>();
+        ProjectDto[] projectDtos = modelMapper.map(projects.getContent(), ProjectDto[].class);
+        projectDtoTPage.setStat(projects, Arrays.asList(projectDtos));
+        return projectDtoTPage;
+    }
+
+    @Override
+    public ProjectDto getByProjectCode(String projectCode) {
         return null;
     }
 
     @Override
-    public List<Project> getByProjectCodeContains(String projectCode) {
-        return projectRepository.getAllByProjectCode(projectCode);
+    public List<ProjectDto> getByProjectCodeContains(String projectCode) {
+        return null;
     }
 
     @Override
-    public Boolean delete(Project project) {
-        projectRepository.delete(project);
+    public Boolean delete(ProjectDto project) {
+//        projectRepository.delete(project);
         return Boolean.TRUE;
     }
 }

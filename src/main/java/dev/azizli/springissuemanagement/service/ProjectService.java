@@ -1,6 +1,8 @@
 package dev.azizli.springissuemanagement.service;
 
+import dev.azizli.springissuemanagement.dto.ProjectDto;
 import dev.azizli.springissuemanagement.entity.Project;
+import dev.azizli.springissuemanagement.util.TPage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,15 +14,17 @@ import java.util.List;
  */
 public interface ProjectService {
 
-    Project save(Project project);
+    ProjectDto save(ProjectDto project);
 
-    Project getOne(Long id);
+    ProjectDto getById(Long id);
 
-    Page<Project> findAll(Pageable pageable);
+    List<ProjectDto> getAll();
 
-    List<Project> getByProjectCode(String projectCode);
+    TPage<ProjectDto> findAll(Pageable pageable);
 
-    List<Project> getByProjectCodeContains(String projectCode);
+    ProjectDto getByProjectCode(String projectCode);
 
-    Boolean delete(Project project);
+    List<ProjectDto> getByProjectCodeContains(String projectCode);
+
+    Boolean delete(ProjectDto project);
 }
